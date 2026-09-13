@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111315" />
+    <meta
+      name="description"
+      content="A personal browser-local soundboard for timestamped YouTube clips."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>Soundboard</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">SB</span>
+          <span>Soundboard</span>
+        </div>
+        <span class="topbar-count" id="clip-count">0 clips</span>
+        <nav class="top-actions" aria-label="Board actions">
+          <button class="button button-quiet" id="import-button" type="button" title="Import board">
+            <span>Import</span>
+          </button>
+          <button class="button button-quiet" id="export-button" type="button" title="Export board">
+            <span>Export</span>
+          </button>
+          <input id="import-input" type="file" accept="application/json,.json" hidden />
+        </nav>
+      </header>
+
+      <main>
+        <section class="workspace" aria-label="Soundboard workspace">
+          <div class="board-pane">
+            <div class="section-heading">
+              <div class="board-tools">
+                <label class="search-box" for="search-input">
+                  <span aria-hidden="true">/</span>
+                  <span class="sr-only">Search clips</span>
+                  <input id="search-input" type="search" placeholder="Search" autocomplete="off" />
+                </label>
+              </div>
+            </div>
+
+            <div class="clip-grid" id="clip-grid" role="list" aria-live="polite"></div>
+            <div class="empty-state" id="empty-state">
+              <div class="empty-mark" aria-hidden="true">+</div>
+              <h3>Your board is quiet.</h3>
+              <p>Add your first timestamped clip to give it a voice.</p>
+              <button class="button button-primary" id="empty-add-button" type="button">Add a clip</button>
+            </div>
+          </div>
+
+          <aside class="player-pane" aria-label="YouTube player">
+            <div class="player-host" id="player-host">
+              <div class="player-placeholder">
+                <span class="placeholder-mark" aria-hidden="true">YT</span>
+                <span>Player loading</span>
+              </div>
+            </div>
+          </aside>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>Keys 1-9 trigger visible clips</span>
+      </footer>
+    </div>
+
+    <dialog class="clip-dialog" id="clip-dialog">
+      <form id="clip-form" novalidate>
+        <div class="dialog-heading">
+          <div>
+            <h2 id="dialog-title">New clip</h2>
+          </div>
+          <button class="dialog-close" id="close-dialog-button" type="button" aria-label="Close dialog">X</button>
+        </div>
+
+        <div class="form-fields">
+          <label class="field field-wide">
+            <span>Title</span>
+            <input id="title-input" name="title" type="text" maxlength="80" placeholder="The line everyone waits for" required />
+          </label>
+          <label class="field field-wide">
+            <span>YouTube URL</span>
+            <input id="url-input" name="url" type="url" placeholder="https://youtu.be/..." required />
+          </label>
+          <div class="field-row">
+            <label class="field">
+              <span>Start</span>
+              <input id="start-input" name="start" type="text" inputmode="decimal" value="0:00" placeholder="0:00 or 7.5" required />
+            </label>
+            <label class="field">
+              <span>End</span>
+              <input id="end-input" name="end" type="text" inputmode="decimal" placeholder="0:08 or 7.5" required />
+            </label>
+          </div>
+        </div>
+
+        <p class="form-error" id="form-error" role="alert" hidden></p>
+        <div class="dialog-actions">
+          <button class="button button-quiet" id="preview-clip-button" type="button">Preview</button>
+          <button class="button button-primary" type="submit">Save clip</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="clip-dialog transfer-dialog" id="import-options-dialog">
+      <form novalidate>
+        <div class="dialog-heading">
+          <div>
+            <h2>Import board</h2>
+          </div>
+          <button class="dialog-close" id="close-import-options-button" type="button" aria-label="Close dialog">X</button>
+        </div>
+
+        <div class="dialog-actions transfer-actions">
+          <button class="button button-quiet" id="import-file-button" type="button">Import file</button>
+          <button class="button button-primary" id="paste-import-button" type="button">Paste JSON</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="clip-dialog transfer-dialog" id="export-options-dialog">
+      <form novalidate>
+        <div class="dialog-heading">
+          <div>
+            <h2>Export board</h2>
+          </div>
+          <button class="dialog-close" id="close-export-options-button" type="button" aria-label="Close dialog">X</button>
+        </div>
+
+        <div class="dialog-actions transfer-actions">
+          <button class="button button-quiet" id="export-file-button" type="button">Export file</button>
+          <button class="button button-primary" id="copy-export-button" type="button">Copy JSON</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="clip-dialog json-dialog" id="json-dialog">
+      <form id="json-form" novalidate>
+        <div class="dialog-heading">
+          <div>
+            <h2>Paste board JSON</h2>
+          </div>
+          <button class="dialog-close" id="close-json-dialog-button" type="button" aria-label="Close dialog">X</button>
+        </div>
+
+        <div class="form-fields">
+          <label class="field field-wide">
+            <span>Board JSON</span>
+            <textarea id="json-input" name="json" rows="12" spellcheck="false" placeholder='{"version":1,"clips":[]}' required></textarea>
+          </label>
+        </div>
+
+        <p class="form-error" id="json-error" role="alert" hidden></p>
+        <div class="dialog-actions">
+          <button class="button button-primary" type="submit">Import JSON</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="./app.mjs"></script>
+  </body>
+</html>
