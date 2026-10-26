@@ -20,10 +20,14 @@ const elements = {
   importButton: document.querySelector("#import-button"),
   exportButton: document.querySelector("#export-button"),
   importOptionsDialog: document.querySelector("#import-options-dialog"),
-  closeImportOptionsButton: document.querySelector("#close-import-options-button"),
+  closeImportOptionsButton: document.querySelector(
+    "#close-import-options-button",
+  ),
   importFileButton: document.querySelector("#import-file-button"),
   exportOptionsDialog: document.querySelector("#export-options-dialog"),
-  closeExportOptionsButton: document.querySelector("#close-export-options-button"),
+  closeExportOptionsButton: document.querySelector(
+    "#close-export-options-button",
+  ),
   exportFileButton: document.querySelector("#export-file-button"),
   copyExportButton: document.querySelector("#copy-export-button"),
   pasteImportButton: document.querySelector("#paste-import-button"),
@@ -40,7 +44,6 @@ const elements = {
   urlInput: document.querySelector("#url-input"),
   startInput: document.querySelector("#start-input"),
   endInput: document.querySelector("#end-input"),
-  previewClipButton: document.querySelector("#preview-clip-button"),
   formError: document.querySelector("#form-error"),
   jsonDialog: document.querySelector("#json-dialog"),
   jsonForm: document.querySelector("#json-form"),
@@ -72,7 +75,9 @@ class ClipStore {
 
   async put(clip) {
     const clips = this.read();
-    const existingIndex = clips.findIndex((storedClip) => String(storedClip.id) === String(clip.id));
+    const existingIndex = clips.findIndex(
+      (storedClip) => String(storedClip.id) === String(clip.id),
+    );
 
     if (existingIndex >= 0) {
       clips[existingIndex] = clip;
@@ -130,17 +135,23 @@ function loadYouTubeApi() {
       finish();
     };
 
-    const existingScript = document.querySelector('script[src="https://www.youtube.com/iframe_api"]');
+    const existingScript = document.querySelector(
+      'script[src="https://www.youtube.com/iframe_api"]',
+    );
 
     if (!existingScript) {
       const script = document.createElement("script");
       script.src = "https://www.youtube.com/iframe_api";
       script.async = true;
-      script.onerror = () => fail(new Error("The YouTube player API could not be loaded."));
+      script.onerror = () =>
+        fail(new Error("The YouTube player API could not be loaded."));
       document.head.append(script);
     }
 
-    window.setTimeout(() => fail(new Error("The YouTube player API took too long to load.")), 15000);
+    window.setTimeout(
+      () => fail(new Error("The YouTube player API took too long to load.")),
+      15000,
+    );
   });
 
   return youtubeApiPromise;
@@ -169,7 +180,10 @@ class YouTubePlayer {
       rel: 0,
     };
 
-    if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+    if (
+      window.location.protocol === "http:" ||
+      window.location.protocol === "https:"
+    ) {
       playerVars.origin = window.location.origin;
     }
 
@@ -212,24 +226,6 @@ class YouTubePlayer {
     this.startMonitor();
   }
 
-  async cue(clip) {
-    this.currentClip = clip;
-    this.onEvent({ type: "loading", clip, preview: true });
-    const player = await this.initialization;
-
-    if (!player || !this.ready) {
-      throw new Error("The YouTube player is not available yet.");
-    }
-
-    this.clearMonitor();
-    player.cueVideoById({
-      videoId: clip.videoId,
-      startSeconds: clip.start,
-      endSeconds: clip.end,
-    });
-    this.onEvent({ type: "cued", clip });
-  }
-
   stop() {
     this.clearMonitor();
     this.currentClip = null;
@@ -242,7 +238,11 @@ class YouTubePlayer {
   startMonitor() {
     this.clearMonitor();
     this.monitorTimer = window.setInterval(() => {
-      if (!this.currentClip || !this.player || typeof this.player.getCurrentTime !== "function") {
+      if (
+        !this.currentClip ||
+        !this.player ||
+        typeof this.player.getCurrentTime !== "function"
+      ) {
         return;
       }
 
@@ -271,7 +271,6 @@ class YouTubePlayer {
       [1]: "playing",
       [2]: "paused",
       [3]: "buffering",
-      [5]: "cued",
     };
     const type = stateMap[event.data] || "unknown";
 
@@ -297,7 +296,11 @@ class YouTubePlayer {
     };
 
     this.clearMonitor();
-    this.onEvent({ type: "error", clip: this.currentClip, message: messages[event.data] || "YouTube could not play this video." });
+    this.onEvent({
+      type: "error",
+      clip: this.currentClip,
+      message: messages[event.data] || "YouTube could not play this video.",
+    });
   }
 }
 
@@ -308,7 +311,10 @@ function getVisibleClips() {
 
   return [...state.clips]
     .sort((firstClip, secondClip) => firstClip.order - secondClip.order)
-    .filter((clip) => !query || `${clip.title} ${clip.videoId}`.toLowerCase().includes(query));
+    .filter(
+      (clip) =>
+        !query || `${clip.title} ${clip.videoId}`.toLowerCase().includes(query),
+    );
 }
 
 function findClipById(id) {
@@ -414,7 +420,9 @@ function render() {
     elements.clipGrid.append(noResults);
   }
 
-  visibleClips.forEach((clip, index) => elements.clipGrid.append(createClipTile(clip, index)));
+  visibleClips.forEach((clip, index) =>
+    elements.clipGrid.append(createClipTile(clip, index)),
+  );
 
   if (state.clips.length > 0) {
     elements.clipGrid.append(createAddClipTile());
@@ -472,7 +480,9 @@ function showFormError(message) {
 }
 
 function readFormClip() {
-  const previousClip = state.clips.find((clip) => clip.id === state.editingClipId);
+  const previousClip = state.clips.find(
+    (clip) => clip.id === state.editingClipId,
+  );
   return validateClipDraft(
     {
       title: elements.titleInput.value,
@@ -492,7 +502,9 @@ async function saveClip(event) {
     const wasEditing = Boolean(state.editingClipId);
     const clip = readFormClip();
     await clipStore.put(clip);
-    const existingIndex = state.clips.findIndex((storedClip) => String(storedClip.id) === String(clip.id));
+    const existingIndex = state.clips.findIndex(
+      (storedClip) => String(storedClip.id) === String(clip.id),
+    );
 
     if (existingIndex >= 0) {
       state.clips[existingIndex] = clip;
@@ -503,15 +515,6 @@ async function saveClip(event) {
     render();
     closeDialog();
     showToast(wasEditing ? "Clip updated." : "Clip saved.");
-  } catch (error) {
-    showFormError(error.message);
-  }
-}
-
-async function previewClip() {
-  try {
-    const clip = readFormClip();
-    await youtubePlayer.cue(clip);
   } catch (error) {
     showFormError(error.message);
   }
@@ -542,7 +545,9 @@ async function deleteClip(id) {
   }
 
   await clipStore.delete(id);
-  state.clips = state.clips.filter((storedClip) => String(storedClip.id) !== String(id));
+  state.clips = state.clips.filter(
+    (storedClip) => String(storedClip.id) !== String(id),
+  );
 
   if (String(state.activeClipId) === String(id)) {
     state.activeClipId = null;
@@ -554,7 +559,10 @@ async function deleteClip(id) {
 }
 
 function handleGridClick(event) {
-  const clickedElement = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const clickedElement =
+    event.target instanceof Element
+      ? event.target
+      : event.target?.parentElement;
   const actionTarget = clickedElement?.closest("[data-action]");
 
   if (!actionTarget) {
@@ -604,7 +612,10 @@ async function copyBoard() {
   try {
     const boardJson = getBoardJson();
 
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+    if (
+      navigator.clipboard &&
+      typeof navigator.clipboard.writeText === "function"
+    ) {
       await navigator.clipboard.writeText(boardJson);
     } else {
       const clipboardInput = document.createElement("textarea");
@@ -641,7 +652,11 @@ async function importBoardText(rawText) {
   }
 
   const existingIds = new Set(state.clips.map((clip) => String(clip.id)));
-  const firstOrder = state.clips.reduce((largestOrder, clip) => Math.max(largestOrder, clip.order), -1) + 1;
+  const firstOrder =
+    state.clips.reduce(
+      (largestOrder, clip) => Math.max(largestOrder, clip.order),
+      -1,
+    ) + 1;
   const importedClips = [];
   let duplicateCount = 0;
 
@@ -686,9 +701,10 @@ async function importBoardText(rawText) {
 }
 
 function formatImportMessage({ importedCount, duplicateCount }) {
-  const importedMessage = importedCount > 0
-    ? `${importedCount} clip${importedCount === 1 ? "" : "s"} imported`
-    : "No new clips imported";
+  const importedMessage =
+    importedCount > 0
+      ? `${importedCount} clip${importedCount === 1 ? "" : "s"} imported`
+      : "No new clips imported";
 
   if (duplicateCount === 0) {
     return `${importedMessage}.`;
@@ -773,13 +789,13 @@ function handleKeyboard(event) {
   const tagName = event.target.tagName.toLowerCase();
 
   if (
-    elements.clipDialog.open
-    || elements.jsonDialog.open
-    || elements.importOptionsDialog.open
-    || elements.exportOptionsDialog.open
-    || tagName === "input"
-    || tagName === "textarea"
-    || tagName === "select"
+    elements.clipDialog.open ||
+    elements.jsonDialog.open ||
+    elements.importOptionsDialog.open ||
+    elements.exportOptionsDialog.open ||
+    tagName === "input" ||
+    tagName === "textarea" ||
+    tagName === "select"
   ) {
     return;
   }
@@ -797,13 +813,19 @@ function handleKeyboard(event) {
 function bindEvents() {
   elements.emptyAddButton.addEventListener("click", () => openDialog());
   elements.importButton.addEventListener("click", openImportOptionsDialog);
-  elements.closeImportOptionsButton.addEventListener("click", closeImportOptionsDialog);
+  elements.closeImportOptionsButton.addEventListener(
+    "click",
+    closeImportOptionsDialog,
+  );
   elements.importFileButton.addEventListener("click", () => {
     closeImportOptionsDialog();
     elements.importInput.click();
   });
   elements.exportButton.addEventListener("click", openExportOptionsDialog);
-  elements.closeExportOptionsButton.addEventListener("click", closeExportOptionsDialog);
+  elements.closeExportOptionsButton.addEventListener(
+    "click",
+    closeExportOptionsDialog,
+  );
   elements.exportFileButton.addEventListener("click", () => {
     closeExportOptionsDialog();
     exportBoard();
@@ -814,7 +836,6 @@ function bindEvents() {
   });
   elements.closeDialogButton.addEventListener("click", closeDialog);
   elements.clipForm.addEventListener("submit", saveClip);
-  elements.previewClipButton.addEventListener("click", previewClip);
   elements.clipGrid.addEventListener("click", handleGridClick);
   elements.searchInput.addEventListener("input", (event) => {
     state.search = event.target.value;

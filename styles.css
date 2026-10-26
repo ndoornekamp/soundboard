@@ -376,30 +376,6 @@ select:focus-visible {
   display: none;
 }
 
-.empty-mark {
-  display: grid;
-  width: 45px;
-  height: 45px;
-  place-items: center;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  color: var(--coral-dark);
-  font-size: 25px;
-}
-
-.empty-state h3 {
-  margin: 18px 0 7px;
-  font-family: var(--display);
-  font-size: 28px;
-  font-weight: 400;
-}
-
-.empty-state p {
-  margin: 0 0 22px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
 .no-results {
   grid-column: 1 / -1;
   padding: 42px 0;
